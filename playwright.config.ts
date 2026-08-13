@@ -30,11 +30,19 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { 
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1920, height: 1080 },
+        launchOptions: {
+          args: ['--start-maximized'],
+        },
+      },
     },
     {
        name: 'firefox',
-       use: { ...devices['Desktop Firefox'] },
+       use: { ...devices['Desktop Firefox'],
+        viewport: { width: 1920, height: 1080 },
+        },
     },
     {
       name: 'webkit',
