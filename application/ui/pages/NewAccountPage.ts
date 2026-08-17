@@ -3,7 +3,7 @@ import { PageModel } from '../model/PageModel';
 
 export class NewAccountPage extends PageModel {
 
-    constructor(page: Page) {
+    private constructor(page: Page) {
         super(page.locator("div#openAccountForm"));
     }
 

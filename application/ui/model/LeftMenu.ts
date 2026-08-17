@@ -3,7 +3,7 @@ import { PageModel } from "./PageModel";
 
 export class LeftMenu extends PageModel {
 
-    constructor(page: Page) {
+    private constructor(page: Page) {
         super(page.locator("ul.leftmenu"));
     }
 
