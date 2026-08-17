@@ -4,7 +4,7 @@
     "module": "commonJS",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": ["DOM", "DOM.Iterable", "ES2020"],
     "types": ["@playwright/test", "node"]
   },
   "include": ["tests/**/*", "playwright.config.ts"],

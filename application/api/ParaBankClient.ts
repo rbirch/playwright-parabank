@@ -13,7 +13,21 @@ export interface Account {
 export class ParaBankApiClient {
   constructor(private request: APIRequestContext) {}
 
-  
+  /**
+   * 
+   * @param customerId 
+   * @param newAccountType 
+   * @param fromAccountId 
+   * @returns new account information
+   */
+  async createAccount(customerId: number, newAccountType: number, fromAccountId: number): Promise<Account> {
+    const response = await this.request.post(
+      `${PARABANK_BASE_URL}/createAccount?customerId=${customerId}&newAccountType=${newAccountType}&fromAccountId=${fromAccountId}`
+    );
+    expect(response.ok()).toBeTruthy();
+    return await response.json();
+  }
+
   /**
    * Fetch all accounts for a specific customer
    */
