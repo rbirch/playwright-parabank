@@ -1,5 +1,6 @@
 import { Page } from '@playwright/test';
 
+
 export async function gotoApp(page: Page) {
   const baseUrl = process.env.BASE_URL;
 

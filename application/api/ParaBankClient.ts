@@ -13,6 +13,7 @@ export interface Account {
 export class ParaBankApiClient {
   constructor(private request: APIRequestContext) {}
 
+  
   /**
    * Fetch all accounts for a specific customer
    */
