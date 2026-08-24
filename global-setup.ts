@@ -24,9 +24,22 @@ function ensureRequiredEnv(): void {
 ensureRequiredEnv();
 
 const PARABANK_URL = process.env.BASE_URL;
-const PARABANK_API_BASE = `${PARABANK_URL}/parabank/services/bank`;
 const PARABANK_IMAGE = process.env.PARABANK_IMAGE || 'parasoft/parabank';
 const CONTAINER_NAME = process.env.PARABANK_CONTAINER_NAME || 'parabank';
+
+function getParaBankApiBase(baseUrl: string | undefined): string {
+  if (!baseUrl) {
+    throw new Error('BASE_URL is not defined. Check your environment configuration.');
+  }
+
+  try {
+    return `${new URL(baseUrl).origin}/parabank/services/bank`;
+  } catch {
+    throw new Error(`BASE_URL must be an absolute URL. Received: ${baseUrl}`);
+  }
+}
+
+const PARABANK_API_BASE = getParaBankApiBase(PARABANK_URL);
 
 /**
  * Initialize Docker client with proper socket/host detection
