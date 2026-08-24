@@ -1,10 +1,11 @@
+import 'dotenv/config';
 import axios from 'axios';
 import Docker from 'dockerode';
 import * as fs from 'fs';
 import * as path from 'path';
 
 const PARABANK_URL = process.env.BASE_URL;
-const CONTAINER_NAME = 'parabank'; // Adjust to your container name
+const CONTAINER_NAME = process.env.PARABANK_CONTAINER_NAME || 'parabank';
 
 /**
  * Initialize Docker client with proper socket/host detection

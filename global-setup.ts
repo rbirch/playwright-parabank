@@ -1,11 +1,31 @@
+import 'dotenv/config';
 import axios from 'axios';
 import Docker from 'dockerode';
 import * as fs from 'fs';
 import * as path from 'path';
 import process from 'process';
 
+function ensureRequiredEnv(): void {
+  const required = {
+    BASE_URL: process.env.BASE_URL,
+    PARABANK_IMAGE: process.env.PARABANK_IMAGE || 'parasoft/parabank',
+    PARABANK_CONTAINER_NAME: process.env.PARABANK_CONTAINER_NAME || 'parabank',
+  };
+
+  const missing = Object.entries(required)
+    .filter(([_, value]) => !value)
+    .map(([key]) => key);
+
+  if (missing.length > 0) {
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
+}
+
+ensureRequiredEnv();
+
 const PARABANK_URL = process.env.BASE_URL;
-const CONTAINER_NAME = 'parabank'; // Adjust to your container name
+const PARABANK_IMAGE = process.env.PARABANK_IMAGE || 'parasoft/parabank';
+const CONTAINER_NAME = process.env.PARABANK_CONTAINER_NAME || 'parabank';
 
 /**
  * Initialize Docker client with proper socket/host detection
@@ -108,8 +128,8 @@ async function initializeDatabase(): Promise<void> {
  */
 async function pullImage(): Promise<void> {
   try {
-    console.log('Pulling latest ParaBank image...');
-    const stream = await docker.pull(CONTAINER_NAME);
+    console.log(`Pulling latest ParaBank image: ${PARABANK_IMAGE}...`);
+    const stream = await docker.pull(PARABANK_IMAGE);
     
     // Wait for pull to complete
     await new Promise((resolve, reject) => {
@@ -131,9 +151,9 @@ async function pullImage(): Promise<void> {
  */
 async function startContainer(): Promise<void> {
   try {
-    console.log(`Starting ${CONTAINER_NAME} container...`);
+    console.log(`Starting ${CONTAINER_NAME} container from image ${PARABANK_IMAGE}...`);
     const container = await docker.createContainer({
-      Image: CONTAINER_NAME,
+      Image: PARABANK_IMAGE,
       name: CONTAINER_NAME,
       PortBindings: {
         '8080/tcp': [{ HostPort: '8080' }],
