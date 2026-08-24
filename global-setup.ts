@@ -155,8 +155,13 @@ async function startContainer(): Promise<void> {
     const container = await docker.createContainer({
       Image: PARABANK_IMAGE,
       name: CONTAINER_NAME,
-      PortBindings: {
-        '8080/tcp': [{ HostPort: '8080' }],
+      ExposedPorts: {
+        '8080/tcp': {},
+      },
+      HostConfig: {
+        PortBindings: {
+          '8080/tcp': [{ HostPort: '8080' }],
+        },
       },
     });
     
@@ -171,7 +176,7 @@ async function startContainer(): Promise<void> {
 /**
  * Wait for ParaBank to be available
  */
-async function waitForParaBankReady(maxAttempts: number = 30): Promise<void> {
+async function waitForParaBankReady(maxAttempts: number = 90): Promise<void> {
   let attempts = 0;
   
   while (attempts < maxAttempts) {
