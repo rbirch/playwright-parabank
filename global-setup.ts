@@ -24,7 +24,7 @@ function ensureRequiredEnv(): void {
 ensureRequiredEnv();
 
 const PARABANK_URL = process.env.BASE_URL;
-const PARABANK_API_BASE = new URL('/parabank/services/bank', PARABANK_URL).toString().replace(/\/$/, '');
+const PARABANK_API_BASE = `${new URL(PARABANK_URL).origin}/parabank/services/bank`;
 const PARABANK_IMAGE = process.env.PARABANK_IMAGE || 'parasoft/parabank';
 const CONTAINER_NAME = process.env.PARABANK_CONTAINER_NAME || 'parabank';
 
