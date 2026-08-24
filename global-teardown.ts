@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const PARABANK_URL = process.env.BASE_URL;
+const PARABANK_API_BASE = `${PARABANK_URL}/parabank/services/bank`;
 const CONTAINER_NAME = process.env.PARABANK_CONTAINER_NAME || 'parabank';
 
 /**
@@ -83,7 +84,7 @@ const docker = initializeDocker();
 async function cleanDatabase(): Promise<void> {
   try {
     console.log('Cleaning ParaBank database...');
-    const response = await axios.post(`${PARABANK_URL}/cleanDB`);
+    const response = await axios.post(`${PARABANK_API_BASE}/cleanDB`);
     console.log('✓ Database cleaned successfully');
   } catch (error) {
     console.error('Error cleaning database:', error);
