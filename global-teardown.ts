@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const PARABANK_URL = process.env.BASE_URL;
-const PARABANK_API_BASE = `${PARABANK_URL}/parabank/services/bank`;
+const PARABANK_API_BASE = new URL('/parabank/services/bank', PARABANK_URL).toString().replace(/\/$/, '');
 const CONTAINER_NAME = process.env.PARABANK_CONTAINER_NAME || 'parabank';
 
 /**
