@@ -24,6 +24,7 @@ function ensureRequiredEnv(): void {
 ensureRequiredEnv();
 
 const PARABANK_URL = process.env.BASE_URL;
+const PARABANK_API_BASE = `${PARABANK_URL}/parabank/services/bank`;
 const PARABANK_IMAGE = process.env.PARABANK_IMAGE || 'parasoft/parabank';
 const CONTAINER_NAME = process.env.PARABANK_CONTAINER_NAME || 'parabank';
 
@@ -115,7 +116,7 @@ async function isContainerRunning(): Promise<boolean> {
 async function initializeDatabase(): Promise<void> {
   try {
     console.log('Initializing ParaBank database...');
-    const response = await axios.post(`${PARABANK_URL}/initializeDB`);
+    const response = await axios.post(`${PARABANK_API_BASE}/initializeDB`);
     console.log('✓ Database initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);
