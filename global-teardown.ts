@@ -5,8 +5,21 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const PARABANK_URL = process.env.BASE_URL;
-const PARABANK_API_BASE = `${new URL(PARABANK_URL).origin}/parabank/services/bank`;
 const CONTAINER_NAME = process.env.PARABANK_CONTAINER_NAME || 'parabank';
+
+function getParaBankApiBase(baseUrl: string | undefined): string {
+  if (!baseUrl) {
+    throw new Error('BASE_URL is not defined. Check your environment configuration.');
+  }
+
+  try {
+    return `${new URL(baseUrl).origin}/parabank/services/bank`;
+  } catch {
+    throw new Error(`BASE_URL must be an absolute URL. Received: ${baseUrl}`);
+  }
+}
+
+const PARABANK_API_BASE = getParaBankApiBase(PARABANK_URL);
 
 /**
  * Initialize Docker client with proper socket/host detection
