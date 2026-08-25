@@ -1,0 +1,50 @@
+name: Run Demo Tests
+
+on:
+  repository_dispatch:
+    types: [run-demo-tests]
+
+jobs:
+  demo-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DEMO_LOG_URL: ${{ secrets.DEMO_LOG_URL }}
+      DEMO_LOG_KEY: ${{ secrets.DEMO_LOG_KEY }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          curl -sS -X POST "$DEMO_LOG_URL" \
+            -H "Authorization: Bearer $DEMO_LOG_KEY" \
+            -H "Content-Type: application/json" \
+            --data "{\"run_id\":\"${{ github.run_id }}\",\"message\":\"Dependencies installed; starting demo test run.\"}"
+
+      - name: Report start
+        run: |
+          curl -sS -X POST "$DEMO_LOG_URL" \
+            -H "Authorization: Bearer $DEMO_LOG_KEY" \
+            -H "Content-Type: application/json" \
+            --data "{\"run_id\":\"${{ github.run_id }}\",\"message\":\"Starting Playwright smoke tests.\"}"
+
+      - name: Run Playwright tests
+        run: |
+          npx playwright test --reporter=line
+
+      - name: Report completion
+        if: always()
+        run: |
+          curl -sS -X POST "$DEMO_LOG_URL" \
+            -H "Authorization: Bearer $DEMO_LOG_KEY" \
+            -H "Content-Type: application/json" \
+            --data "{\"run_id\":\"${{ github.run_id }}\",\"message\":\"Demo workflow finished with status: ${{ job.status }}\"}"
