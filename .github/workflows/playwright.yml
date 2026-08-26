@@ -43,12 +43,18 @@ jobs:
 
   deploy:
     needs: test
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: ${{ always() && (github.ref_name == 'main' || github.ref_name == 'master') }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Show branch info
+        run: |
+          echo "event=${{ github.event_name }}"
+          echo "ref=${{ github.ref }}"
+          echo "ref_name=${{ github.ref_name }}"
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
