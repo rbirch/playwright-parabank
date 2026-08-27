@@ -68,6 +68,14 @@ export class RegistrationPage {
   }
 
   /**
+   * Convenience helper for creating a new account from the registration page
+   */
+  async registerUser(data: RegistrationData): Promise<void> {
+    await this.goto();
+    await this.register(data);
+  }
+
+  /**
    * Navigate to the registration page
    */
   async goto(): Promise<void> {

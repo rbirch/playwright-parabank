@@ -1,15 +1,18 @@
-import 'dotenv/config';
 import axios from 'axios';
 import Docker from 'dockerode';
 import * as fs from 'fs';
-import * as path from 'path';
 import process from 'process';
+import { appConfig } from './config.ts';
+
+const PARABANK_URL = process.env.BASE_URL || appConfig.baseUrl;;
+const PARABANK_IMAGE = process.env.PARABANK_IMAGE || appConfig.parabankImage;
+const CONTAINER_NAME = process.env.PARABANK_CONTAINER_NAME || appConfig.containerName;
 
 function ensureRequiredEnv(): void {
   const required = {
-    BASE_URL: process.env.BASE_URL,
-    PARABANK_IMAGE: process.env.PARABANK_IMAGE || 'parasoft/parabank',
-    PARABANK_CONTAINER_NAME: process.env.PARABANK_CONTAINER_NAME || 'parabank',
+    BASE_URL: PARABANK_URL,
+    PARABANK_IMAGE: PARABANK_IMAGE || 'parasoft/parabank',
+    PARABANK_CONTAINER_NAME: CONTAINER_NAME || 'parabank',
   };
 
   const missing = Object.entries(required)
@@ -23,9 +26,6 @@ function ensureRequiredEnv(): void {
 
 ensureRequiredEnv();
 
-const PARABANK_URL = process.env.BASE_URL;
-const PARABANK_IMAGE = process.env.PARABANK_IMAGE || 'parasoft/parabank';
-const CONTAINER_NAME = process.env.PARABANK_CONTAINER_NAME || 'parabank';
 
 function getParaBankApiBase(baseUrl: string | undefined): string {
   if (!baseUrl) {
@@ -46,52 +46,54 @@ const PARABANK_API_BASE = getParaBankApiBase(PARABANK_URL);
  * Handles both WSL2 (Windows) and Linux installations
  */
 function initializeDocker(): Docker {
-  // Priority 1: Use DOCKER_HOST env var if set
+  const isWsl = process.platform !== 'win32' && fs.existsSync('/proc/version') && fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
+
+  // Priority 1: respect an explicit Docker host override if the developer configured one.
   if (process.env.DOCKER_HOST) {
-    const host = process.env.DOCKER_HOST;
-    console.log(`Using DOCKER_HOST: ${host}`);
-    
-    if (host.startsWith('unix://')) {
-      // Unix socket path
-      const socketPath = host.replace('unix://', '');
-      return new Docker({ socketPath });
-    }
-    
-    if (host.startsWith('npipe://')) {
-      // Windows named pipe
-      return new Docker({ socketPath: host });
-    }
-    
-    if (host.includes('://')) {
-      // TCP host
-      const url = new URL(host);
-      return new Docker({ host: '172.26.24.55', port: 2375 });
-    //   return new Docker({
-    //     host: url.hostname,
-    //     port: parseInt(url.port || '2375', 10),
-    //   });
+    const host = process.env.DOCKER_HOST.trim();
+
+    if (process.platform !== 'win32' && host.startsWith('npipe://')) {
+      console.log(`Ignoring Windows Docker pipe DOCKER_HOST on non-Windows environment: ${host}`);
+    } else {
+      console.log(`Using DOCKER_HOST: ${host}`);
+
+      if (host.startsWith('unix://')) {
+        const socketPath = host.replace('unix://', '');
+        return new Docker({ socketPath });
+      }
+
+      if (host.startsWith('npipe://')) {
+        return new Docker({ socketPath: host });
+      }
+
+      if (host.includes('://')) {
+        const url = new URL(host);
+        return new Docker({ host: url.hostname, port: Number(url.port || 2375) });
+      }
     }
   }
 
-  // Priority 2: Platform-specific defaults
-  if (process.platform === 'win32') {
-    // Windows (WSL2) - try named pipe first
-    // const windowsPipe = '//./pipe/docker_engine';
-    // console.log(`Windows detected. Trying named pipe: ${windowsPipe}`);
-    return new Docker({ host: '172.26.24.55', port: 2375 }); // Adjust to your WSL2 Docker host IP and port
-  }
-
-  // Priority 3: Linux / macOS Unix Sockets
-  const linuxPaths = [
+  // Priority 2: prefer the standard Unix socket used by Docker Engine on Linux and WSL2.
+  const linuxSocketPaths = [
     '/var/run/docker.sock',
     '/run/docker.sock',
-    `${process.env.HOME}/.docker/run/docker.sock`, // Rootless / Docker Desktop on Mac/Linux
+    `${process.env.HOME}/.docker/run/docker.sock`,
+    `${process.env.HOME}/.docker/desktop/docker.sock`,
   ];
 
-  for (const socketPath of linuxPaths) {
+  for (const socketPath of linuxSocketPaths) {
     if (socketPath && fs.existsSync(socketPath)) {
       console.log(`Found Docker socket at: ${socketPath}`);
       return new Docker({ socketPath });
+    }
+  }
+
+  // Priority 3: Windows fallback only if a native Windows Docker engine is present.
+  if (process.platform === 'win32') {
+    const windowsPipe = '//./pipe/docker_engine';
+    if (fs.existsSync(windowsPipe.replace(/\//g, '\\'))) {
+      console.log(`Using Windows Docker named pipe: ${windowsPipe}`);
+      return new Docker({ socketPath: windowsPipe });
     }
   }
 
@@ -195,7 +197,8 @@ async function waitForParaBankReady(maxAttempts: number = 90): Promise<void> {
   
   while (attempts < maxAttempts) {
     try {
-      await axios.get(`${PARABANK_URL}/index.htm`);
+      const appUrl = new URL('/parabank/index.htm', PARABANK_URL).toString();
+      await axios.get(appUrl);
       console.log('✓ ParaBank is ready');
       return;
     } catch (error) {

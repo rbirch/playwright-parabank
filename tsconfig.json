@@ -3,6 +3,7 @@
     "target": "ESNext",
     "module": "commonJS",
     "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
     "esModuleInterop": true,
     "lib": ["DOM", "DOM.Iterable", "ES2020"],
     "types": ["@playwright/test", "node"]
