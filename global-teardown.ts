@@ -3,8 +3,9 @@ import axios from 'axios';
 import Docker from 'dockerode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { appConfig } from './config';
 
-const PARABANK_URL = process.env.BASE_URL;
+const PARABANK_URL = process.env.BASE_URL || appConfig.baseUrl;
 const CONTAINER_NAME = process.env.PARABANK_CONTAINER_NAME || 'parabank';
 
 function getParaBankApiBase(baseUrl: string | undefined): string {

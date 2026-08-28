@@ -1,4 +1,6 @@
 import { Page, Locator } from '@playwright/test';
+import { appConfig } from '../../../config';
+import { PageModel } from '../model/PageModel';
 
 export interface RegistrationData {
   firstName: string;
@@ -14,7 +16,7 @@ export interface RegistrationData {
   confirmPassword: string;
 }
 
-export class RegistrationPage {
+export class RegistrationPage extends PageModel {
   private page: Page;
 
   // Form field locators
@@ -32,6 +34,7 @@ export class RegistrationPage {
   private registerButton: Locator;
 
   constructor(page: Page) {
+    super(page.locator("div#customerForm"), 'register.htm');
     this.page = page;
 
     // Initialize locators - using table cell structure from the form
@@ -46,7 +49,7 @@ export class RegistrationPage {
     this.usernameInput = page.locator('input[name="customer.username"]');
     this.passwordInput = page.locator('input[name="customer.password"]');
     this.confirmPasswordInput = page.locator('input[name="repeatedPassword"]');
-    this.registerButton = page.locator('button:has-text("Register")');
+    this.registerButton = page.locator('input[type="submit"][value="Register"]');
   }
 
   /**
@@ -71,7 +74,6 @@ export class RegistrationPage {
    * Convenience helper for creating a new account from the registration page
    */
   async registerUser(data: RegistrationData): Promise<void> {
-    await this.goto();
     await this.register(data);
   }
 
@@ -79,6 +81,8 @@ export class RegistrationPage {
    * Navigate to the registration page
    */
   async goto(): Promise<void> {
-    await this.page.goto('/parabank/register.htm');
+    const baseUrl = appConfig.baseUrl.endsWith('/') ? appConfig.baseUrl : `${appConfig.baseUrl}/`;
+    const registrationUrl = new URL(this.urlPath, baseUrl).toString();
+    await this.page.goto(registrationUrl);
   }
 }

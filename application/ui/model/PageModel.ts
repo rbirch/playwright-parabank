@@ -1,11 +1,22 @@
-import { Locator, Page } from "@playwright/test";
+import { Locator } from "@playwright/test";
+import { appConfig } from '../../../config';
 
 export abstract class PageModel {
-  
     protected container: Locator;
+    protected urlPath: string;
 
-    constructor(container: Locator) {
+    constructor(container: Locator, urlPath: string) {
         this.container = container;
+        this.urlPath = urlPath.replace(/^\/+/, '');
+    }
+
+    protected getFullUrl(): string {
+        const baseUrl = new URL(appConfig.baseUrl.endsWith('/') ? appConfig.baseUrl : `${appConfig.baseUrl}/`);
+        return new URL(this.urlPath.replace(/^\/+/, ''), baseUrl).toString();
+    }
+
+    async goto(): Promise<void> {
+        await this.container.page().goto(this.getFullUrl());
     }
 
     // Visibility & State

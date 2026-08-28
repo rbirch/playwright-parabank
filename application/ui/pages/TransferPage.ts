@@ -4,7 +4,7 @@ import { PageModel } from "../model/PageModel";
 export class TransferPage extends PageModel {
 
     private constructor(page: Page) {
-        super(page.locator("div#transferApp"));
+        super(page.locator("div#transferApp"), 'transfer.htm');
     }
 
     

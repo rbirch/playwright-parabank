@@ -4,7 +4,7 @@ import { PageModel } from '../model/PageModel';
 export class LoginPage extends PageModel {
 
     private constructor(page: Page) {
-        super(page.locator("div#loginPanel"));
+        super(page.locator("div#loginPanel"), 'login.htm');
     }
 
     getUsernameInput() : Locator {

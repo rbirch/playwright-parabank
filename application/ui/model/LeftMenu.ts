@@ -4,7 +4,7 @@ import { PageModel } from "./PageModel";
 export class LeftMenu extends PageModel {
 
     private constructor(page: Page) {
-        super(page.locator("ul.leftmenu"));
+        super(page.locator("ul.leftmenu"), '');
     }
 
     getMenuItems() {
